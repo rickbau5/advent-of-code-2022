@@ -1,0 +1,44 @@
+use crate::input;
+
+pub fn run() -> (String, String) {
+    let inp = input::load_input(${DAY});
+    // let inp = input::load_test();
+    return (run_part1(inp.clone()), run_part2(inp.clone()));
+}
+
+fn run_part1(inp: String) -> String {
+    let mut res = 0;
+
+    res += 1;
+    println!("input: {}", inp);
+
+    return res.to_string();
+}
+
+fn run_part2(inp: String) -> String {
+    let mut res = 0;
+
+    res += 1;
+    println!("input: {}", inp);
+
+    return res.to_string();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const INPUT: &str = "${INPUT}";
+
+    #[test]
+    fn test_part1() {
+        let res = run_part1(INPUT.to_string());
+        assert_eq!(res, "1")
+    }
+
+    #[test]
+    fn test_part2() {
+        let res = run_part2(INPUT.to_string());
+        assert_eq!(res, "1")
+    }
+}

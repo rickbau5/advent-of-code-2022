@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub fn window_input(input: String, window_size: i32) -> Vec<Vec<String>> {
     let mut windows = vec![];
     let mut window = vec![];
