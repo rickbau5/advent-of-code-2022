@@ -5,11 +5,11 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 pub fn run() -> (String, String) {
-    return (run_part1(), run_part2());
+    let inp = input::load_input(3);
+    return (run_part1(inp.clone()), run_part2(inp.clone()));
 }
 
-fn run_part2() -> String {
-    let inp = input::load_input(3);
+fn run_part2(inp: String) -> String {
     let windows = utils::window_input(inp, 3);
 
     let mut prio_sum = 0;
@@ -29,9 +29,7 @@ fn run_part2() -> String {
     return prio_sum.to_string();
 }
 
-fn run_part1() -> String {
-    let inp = input::load_input(3);
-
+fn run_part1(inp: String) -> String {
     let mut prio_sum = 0;
     for ele in inp.lines() {
         let items_first = ele.get(..ele.len() / 2).unwrap();
@@ -63,5 +61,29 @@ fn char_priority(c: char) -> (char, i32) {
     match c.is_uppercase() {
         true => (c, (c as i32) - 38),
         false => (c, (c as i32) - 96),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const INPUT: &str = "vJrwpWtwJgWrhcsFMMfFFhFp\n\
+    jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\n\
+    PmmdzqPrVvPwwTWBwg\n\
+    wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\n\
+    ttgJtRGJQctTZtZT\n\
+    CrZsJsPPZsGzwwsLwLmpwMDw";
+
+    #[test]
+    fn test_part1() {
+        let res = run_part1(INPUT.to_string());
+        assert_eq!(res, "157")
+    }
+
+    #[test]
+    fn test_part2() {
+        let res = run_part2(INPUT.to_string());
+        assert_eq!(res, "70")
     }
 }
