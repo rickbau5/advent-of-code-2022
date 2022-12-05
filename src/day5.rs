@@ -48,7 +48,7 @@ struct Move {
     to: i32
 }
 
-fn parse_input<'a>(inp: String) -> (Vec<Vec<char>>, Vec<Move>) {
+fn parse_input(inp: String) -> (Vec<Vec<char>>, Vec<Move>) {
     let mut stacks: Vec<Vec<char>> = vec![];
     let mut moves: Vec<Move> = vec![];
     let mut parse_stacks = true;
