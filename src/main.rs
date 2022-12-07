@@ -1,8 +1,8 @@
-mod day6;
+mod day7;
 mod input;
 mod utils;
 
 fn main() {
-    let soln = day6::run();
+    let soln = day7::run();
     println!("part 1: {}\npart 2: {}", soln.0, soln.1)
 }
