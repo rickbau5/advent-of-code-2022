@@ -7,23 +7,15 @@ pub fn run() -> (String, String) {
 }
 
 #[derive(Debug)]
-struct Cmd {
-    cmd: String,
-    arg: Option<String>,
-    out: Option<Vec<Listing>>,
+enum Cmd {
+    Cd(String),
+    Ls(Vec<Listing>),
 }
 
 #[derive(Debug)]
-enum ListingType {
-    File,
-    Dir,
-}
-
-#[derive(Debug)]
-struct Listing {
-    typ: ListingType,
-    name: String,
-    size: Option<i32>
+enum Listing {
+    File { name: String, size: i32 },
+    Dir(String),
 }
 
 fn parse_input(inp: String) -> Vec<Cmd> {
@@ -33,59 +25,38 @@ fn parse_input(inp: String) -> Vec<Cmd> {
     while i < lines.len() {
         let line = lines[i];
         let parts: Vec<&str> = line.split(" ").collect();
-        let cmd_str = parts[1];
-        let arg = match cmd_str {
-            "cd" => Some(parts[2]),
-            _ => None,
-        };
 
-        let output_result = match cmd_str {
-            "ls" => {
+        let cmd = match parts[1] {
+            "cd" => Cmd::Cd(parts[2].to_string()),
+            "ls" => Cmd::Ls({
                 let mut out_idx = i + 1;
                 let mut output = Vec::new();
                 while out_idx < lines.len() && lines[out_idx].chars().next() != Some('$') {
                     let listing_parts = lines[out_idx].split(" ").collect::<Vec<&str>>();
-                    let listing_type = match listing_parts[0] {
-                        "dir" => ListingType::Dir,
-                        _ => ListingType::File,
-                    };
-                    let size: Option<i32> = match listing_type {
-                        ListingType::File => Some(listing_parts[0].parse().expect("for file, this should be the size")),
-                        _ => None
-                    };
-
-                    let listing = Listing{
-                        typ: listing_type,
-                        name: listing_parts[1].to_string(),
-                        size: size,
+                    let listing = match listing_parts[0] {
+                        "dir" => Listing::Dir(listing_parts[1].to_string()),
+                        _ => Listing::File {
+                            name: listing_parts[1].to_string(),
+                            size: listing_parts[0]
+                                .parse()
+                                .expect("for file, this should be the size"),
+                        },
                     };
 
                     output.push(listing);
                     out_idx += 1
                 }
 
-                Some((output, out_idx - i))
-            }
-            _ => None,
+                i += 1 + output.len();
+                output
+            }),
+            _ => unreachable!("unhandled case for command"),
         };
 
-        let out = match output_result {
-            Some((out, output_consumed)) => {
-                // this is awkward having side effects here
-                i += output_consumed;
-                Some(out)
-            },
-            _ => {
-                i += 1;
-                None
-            }
-        };
-
-        let cmd = Cmd{
-            cmd: cmd_str.to_string(),
-            arg: arg.map(|f| f.to_string()),
-            out: out
-        };
+        match cmd {
+            Cmd::Cd(_) => i += 1,
+            _ => {}
+        }
 
         commands.push(cmd);
     }
@@ -95,6 +66,7 @@ fn parse_input(inp: String) -> Vec<Cmd> {
 
 fn run_part1(inp: String) -> String {
     let commands = parse_input(inp);
+    let current_dir: Vec<String> = Vec::new();
 
     for command in commands {
         println!("command: {:?}", command);
