@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::input;
 
 pub fn run() -> (String, String) {
@@ -12,7 +14,7 @@ enum Cmd {
     Ls(Vec<Listing>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Listing {
     File { name: String, size: i32 },
     Dir(String),
@@ -50,7 +52,7 @@ fn parse_input(inp: String) -> Vec<Cmd> {
                 i += 1 + output.len();
                 output
             }),
-            _ => unreachable!("unhandled case for command"),
+            _ => unreachable!("unhandled case for command: {}", parts[1]),
         };
 
         match cmd {
@@ -66,20 +68,73 @@ fn parse_input(inp: String) -> Vec<Cmd> {
 
 fn run_part1(inp: String) -> String {
     let commands = parse_input(inp);
-    let current_dir: Vec<String> = Vec::new();
+    let mut current_dir_stack: Vec<String> = Vec::new();
+    let mut dir_sizes = HashMap::new();
 
     for command in commands {
-        println!("command: {:?}", command);
+        match command {
+            Cmd::Cd(dir) => {
+                match dir.as_str() {
+                    ".." => {
+                        current_dir_stack.pop();
+                    }
+                    "/" => {
+                        current_dir_stack.clear();
+                        current_dir_stack.push("".to_string());
+                    }
+                    _ => {
+                        current_dir_stack.push(dir);
+                    }
+                };
+            }
+            Cmd::Ls(listings) => {
+                let total_file_size = listings
+                    .iter()
+                    .filter_map(|f| match f {
+                        Listing::File { size, .. } => Some(*size),
+                        _ => None,
+                    })
+                    .sum::<i32>();
+
+                dir_sizes
+                    .entry(current_dir_stack.join("/"))
+                    .and_modify(|f| *f += total_file_size)
+                    .or_insert(total_file_size);
+            }
+        };
     }
 
-    return String::from("");
+    let ret: Vec<(&String, i32)> = dir_sizes
+        .iter()
+        .map(|entry| {
+            let children_size = dir_sizes
+                .iter()
+                .filter_map(|(ent, o_size)| {
+                    if ent.starts_with(entry.0) && !ent.eq(entry.0) {
+                        Some(o_size)
+                    } else {
+                        None
+                    }
+                })
+                .sum::<i32>();
+
+            (entry.0, entry.1 + children_size)
+        })
+        .collect();
+
+    let result = ret
+        .iter()
+        .filter_map(|(.., size)| if *size < 100_000 { Some(size) } else { None })
+        .sum::<i32>();
+
+    return result.to_string();
 }
 
 fn run_part2(inp: String) -> String {
     let mut res = 0;
 
-    res += 1;
-    println!("input:\n{}", inp);
+    // res += 1;
+    // println!("input:\n{}", inp);
 
     return res.to_string();
 }
@@ -93,12 +148,13 @@ mod tests {
     #[test]
     fn test_part1() {
         let res = run_part1(INPUT.to_string());
-        assert_eq!(res, "1")
+        assert_eq!(res, "95437")
     }
 
     #[test]
+    #[ignore]
     fn test_part2() {
         let res = run_part2(INPUT.to_string());
-        assert_eq!(res, "1")
+        assert_eq!(res, "24933642")
     }
 }
