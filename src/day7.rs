@@ -5,7 +5,7 @@ use crate::input;
 pub fn run() -> (String, String) {
     let inp = input::load_input(7);
     // let inp = input::load_test();
-    return (run_part1(inp.clone()), run_part2(inp.clone()));
+    return run_both(inp);
 }
 
 #[derive(Debug)]
@@ -16,7 +16,7 @@ enum Cmd {
 
 #[derive(Debug, Clone)]
 enum Listing {
-    File { name: String, size: i32 },
+    File { size: i32 },
     Dir(String),
 }
 
@@ -38,7 +38,6 @@ fn parse_input(inp: String) -> Vec<Cmd> {
                     let listing = match listing_parts[0] {
                         "dir" => Listing::Dir(listing_parts[1].to_string()),
                         _ => Listing::File {
-                            name: listing_parts[1].to_string(),
                             size: listing_parts[0]
                                 .parse()
                                 .expect("for file, this should be the size"),
@@ -66,7 +65,7 @@ fn parse_input(inp: String) -> Vec<Cmd> {
     return commands;
 }
 
-fn run_part1(inp: String) -> String {
+fn run_both(inp: String) -> (String, String) {
     let commands = parse_input(inp);
     let mut current_dir_stack: Vec<String> = Vec::new();
     let mut dir_sizes = HashMap::new();
@@ -104,7 +103,7 @@ fn run_part1(inp: String) -> String {
         };
     }
 
-    let ret: Vec<(&String, i32)> = dir_sizes
+    let processed: HashMap<String, i32> = dir_sizes
         .iter()
         .map(|entry| {
             let children_size = dir_sizes
@@ -118,25 +117,27 @@ fn run_part1(inp: String) -> String {
                 })
                 .sum::<i32>();
 
-            (entry.0, entry.1 + children_size)
+            (entry.0.clone(), entry.1 + children_size)
         })
         .collect();
 
-    let result = ret
+    let part1 = processed
         .iter()
         .filter_map(|(.., size)| if *size < 100_000 { Some(size) } else { None })
         .sum::<i32>();
 
-    return result.to_string();
-}
+    let disk_size = 70000000;
+    let free_req = 30000000;
+    let used = processed.get("").expect("should find the root");
+    let need = free_req - (disk_size - used);
 
-fn run_part2(inp: String) -> String {
-    let mut res = 0;
+    let mut candidates: Vec<i32> = processed
+        .iter()
+        .filter_map(|(.., &size)| if size >= need { Some(size) } else { None })
+        .collect();
+    candidates.sort();
 
-    // res += 1;
-    // println!("input:\n{}", inp);
-
-    return res.to_string();
+    return (part1.to_string(), candidates.first().unwrap().to_string());
 }
 
 #[cfg(test)]
@@ -147,14 +148,8 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let res = run_part1(INPUT.to_string());
-        assert_eq!(res, "95437")
-    }
-
-    #[test]
-    #[ignore]
-    fn test_part2() {
-        let res = run_part2(INPUT.to_string());
-        assert_eq!(res, "24933642")
+        let (part1, part2) = run_both(INPUT.to_string());
+        assert_eq!(part1, "95437");
+        assert_eq!(part2, "24933642");
     }
 }
