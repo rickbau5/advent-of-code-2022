@@ -11,7 +11,7 @@ pub fn run() -> (String, String) {
 #[derive(Debug, Eq, PartialEq, Hash)]
 struct Point {
     x: i32,
-    y: i32
+    y: i32,
 }
 
 fn parse_trees(inp: String) -> HashMap<Point, i32> {
@@ -19,18 +19,24 @@ fn parse_trees(inp: String) -> HashMap<Point, i32> {
 
     for (y, line) in inp.lines().enumerate() {
         for (x, char) in line.chars().enumerate() {
-            trees.insert(Point { x: x as i32, y: y as i32 }, char.to_string().parse().unwrap());
+            trees.insert(
+                Point {
+                    x: x as i32,
+                    y: y as i32,
+                },
+                char.to_string().parse().unwrap(),
+            );
         }
     }
 
-    return trees
+    return trees;
 }
 
 fn run_part1(inp: String) -> String {
     let trees = parse_trees(inp);
 
     let mut visible = 0;
-    let mut pt = Point{x: 0, y: 0};
+    let mut pt = Point { x: 0, y: 0 };
     'outer: for (coord, height) in trees.iter() {
         pt.x = coord.x;
         pt.y = coord.y;
@@ -43,7 +49,7 @@ fn run_part1(inp: String) -> String {
                         break;
                     }
                     pt.x += 1;
-                },
+                }
                 None => {
                     visible += 1;
                     continue 'outer;
@@ -59,7 +65,7 @@ fn run_part1(inp: String) -> String {
                         break;
                     }
                     pt.x -= 1;
-                },
+                }
                 None => {
                     visible += 1;
                     continue 'outer;
@@ -76,7 +82,7 @@ fn run_part1(inp: String) -> String {
                         break;
                     }
                     pt.y += 1;
-                },
+                }
                 None => {
                     visible += 1;
                     continue 'outer;
@@ -92,7 +98,7 @@ fn run_part1(inp: String) -> String {
                         break;
                     }
                     pt.y -= 1;
-                },
+                }
                 None => {
                     visible += 1;
                     continue 'outer;
@@ -108,7 +114,7 @@ fn run_part2(inp: String) -> String {
     let trees = parse_trees(inp);
     let mut tree_scores: HashMap<Point, i32> = HashMap::new();
 
-    let mut pt = Point{x: 0, y: 0};
+    let mut pt = Point { x: 0, y: 0 };
     for (coord, height) in trees.iter() {
         let mut score = 1;
         pt.x = coord.x;
@@ -123,7 +129,7 @@ fn run_part2(inp: String) -> String {
                         break;
                     }
                     pt.x += 1;
-                },
+                }
                 None => {
                     score *= pt.x - coord.x - 1;
                     break;
@@ -140,7 +146,7 @@ fn run_part2(inp: String) -> String {
                         break;
                     }
                     pt.x -= 1;
-                },
+                }
                 None => {
                     score *= coord.x - pt.x - 1;
                     break;
@@ -158,7 +164,7 @@ fn run_part2(inp: String) -> String {
                         break;
                     }
                     pt.y += 1;
-                },
+                }
                 None => {
                     score *= pt.y - coord.y - 1;
                     break;
@@ -175,7 +181,7 @@ fn run_part2(inp: String) -> String {
                         break;
                     }
                     pt.y -= 1;
-                },
+                }
                 None => {
                     score *= coord.y - pt.y - 1;
                     break;
@@ -183,7 +189,13 @@ fn run_part2(inp: String) -> String {
             }
         }
 
-        tree_scores.insert(Point{x: coord.x, y: coord.y}, score);
+        tree_scores.insert(
+            Point {
+                x: coord.x,
+                y: coord.y,
+            },
+            score,
+        );
     }
 
     let best = tree_scores.values().max().unwrap();
