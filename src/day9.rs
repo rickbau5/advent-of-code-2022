@@ -23,19 +23,21 @@ struct Move {
 }
 
 fn parse_input(inp: String) -> Vec<Move> {
-    inp.lines().map(|line| {
-        let parts: Vec<&str> = line.split(" ").collect();
-        let spaces = parts[1].parse().unwrap();
-        let direction = match parts[0] {
-            "U" => Direction::Up,
-            "D" => Direction::Down,
-            "R" => Direction::Right,
-            "L" => Direction::Left,
-            _ => unreachable!("unhandled move"),
-        };
+    inp.lines()
+        .map(|line| {
+            let parts: Vec<&str> = line.split(" ").collect();
+            let spaces = parts[1].parse().unwrap();
+            let direction = match parts[0] {
+                "U" => Direction::Up,
+                "D" => Direction::Down,
+                "R" => Direction::Right,
+                "L" => Direction::Left,
+                _ => unreachable!("unhandled move"),
+            };
 
-        Move{direction, spaces}
-    }).collect::<Vec<Move>>()
+            Move { direction, spaces }
+        })
+        .collect::<Vec<Move>>()
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -119,27 +121,36 @@ fn get_tail_move(tail: Point, head: Point) -> Point {
     }
 }
 
-fn do_moves(mv: Move, head: &mut Point, tail: &mut Point, visited: &mut HashSet<Point>) {
+fn do_moves(mv: Move, rope: &mut Vec<Point>, visited: &mut HashSet<Point>) {
     for _ in 0..mv.spaces {
         match mv.direction {
             Direction::Down => {
+                let head = rope.get_mut(0).unwrap();
                 head.y -= 1;
-            },
+            }
             Direction::Up => {
+                let head = rope.get_mut(0).unwrap();
                 head.y += 1;
-            },
+            }
             Direction::Left => {
+                let head = rope.get_mut(0).unwrap();
                 head.x -= 1;
-            },
+            }
             Direction::Right => {
+                let head = rope.get_mut(0).unwrap();
                 head.x += 1;
-            },
+            }
         };
 
-        let new_pos = get_tail_move(tail.clone(), head.clone());
-        tail.x = new_pos.x;
-        tail.y = new_pos.y;
-        visited.insert(new_pos);
+        for i in 0..rope.len() - 1 {
+            let new_pos = get_tail_move(
+                rope.get(i + 1).unwrap().clone(),
+                rope.get(i).unwrap().clone(),
+            );
+            rope[i + 1] = new_pos
+        }
+
+        visited.insert(rope.last().unwrap().clone());
     }
 }
 
@@ -147,11 +158,10 @@ fn run_part1(inp: String) -> String {
     let moves = parse_input(inp);
     let mut visited: HashSet<Point> = HashSet::new();
 
-    let mut head = Point { x: 0, y: 0 };
-    let mut tail = Point { x: 0, y: 0 };
+    let mut rope = vec![Point { x: 0, y: 0 }, Point { x: 0, y: 0 }];
 
     for mv in moves {
-        do_moves(mv, &mut head, &mut tail, &mut visited)
+        do_moves(mv, &mut rope, &mut visited);
     }
 
     print_visited(&visited);
@@ -160,12 +170,20 @@ fn run_part1(inp: String) -> String {
 }
 
 fn run_part2(inp: String) -> String {
-    let mut res = 0;
+    let moves = parse_input(inp);
+    let mut visited: HashSet<Point> = HashSet::new();
 
-    res += 1;
-    println!("input:\n{}", inp);
+    let mut rope = (0..10)
+        .map(|_| Point { x: 0, y: 0 })
+        .collect::<Vec<Point>>();
 
-    return res.to_string();
+    for mv in moves {
+        do_moves(mv, &mut rope, &mut visited);
+    }
+
+    print_visited(&visited);
+
+    visited.len().to_string()
 }
 
 #[cfg(test)]
@@ -180,11 +198,12 @@ mod tests {
         assert_eq!(res, "13")
     }
 
+    const INPUT_2: &str = "R 5\nU 8\nL 8\nD 3\nR 17\nD 10\nL 25\nU 20";
+
     #[test]
-    #[ignore]
     fn test_part2() {
-        let res = run_part2(INPUT.to_string());
-        assert_eq!(res, "1")
+        let res = run_part2(INPUT_2.to_string());
+        assert_eq!(res, "36")
     }
 
     #[test]
